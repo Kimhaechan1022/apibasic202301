@@ -77,8 +77,7 @@ public class ApiController3 {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.set("department", "business");
         httpHeaders.set("asdf", "qwerty");
-
-
+        log.info("get /rest4");
         return ResponseEntity
                 .ok()
                 .headers(httpHeaders)
