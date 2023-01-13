@@ -17,17 +17,17 @@ public class PostRepository {
     // 메모리 저장소
     private static final Map<Long, PostEntity> posts = new HashMap<>();
 
-    public List<PostEntity> findAll(){
+    public List<PostEntity> findAll() {
         List<PostEntity> postEntityList = new ArrayList<>();
-//        posts.forEach(());
 
         Set<Long> keySet = posts.keySet();
         for (Long postNo : keySet) {
-            PostEntity postEntity = posts.get(keySet);
+            PostEntity postEntity = posts.get(postNo);
             postEntityList.add(postEntity);
         }
         return postEntityList;
     }
+
 
     // 개별조회
     public PostEntity findOne(Long postNo){

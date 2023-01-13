@@ -1,15 +1,20 @@
 package com.example.apibasic.post.api;
 
 
+import com.example.apibasic.post.dto.PostCreateDto;
+import com.example.apibasic.post.dto.PostModReqDto;
+import com.example.apibasic.post.dto.PostResponseDto;
+import com.example.apibasic.post.dto.PostUnitResponseDto;
 import com.example.apibasic.post.entity.PostEntity;
 import com.example.apibasic.post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 // resource : 게시물(post)
@@ -56,44 +61,102 @@ public class PostApiController {
 //    public PostApiController(PostRepository postRepository){
 //        this.postRepository = postRepository;
 //    }
-    
+
+    //payload  등록시 클라이언트가 보내는 정보
 
 
     //게시물 목록 조회
     @GetMapping
-    public ResponseEntity<?> list(){
+    public ResponseEntity<?> list() {
         log.info("/posts GET request");
         List<PostEntity> list = postRepository.findAll();
-        return null;
+
+        //entity list를 dto 리스트로 변환해서 클라이언트에 응답해야한다이잉
+        List<PostResponseDto> responseDtoList = list.stream()
+                .map(PostResponseDto::new)
+                .collect(Collectors.toList());
+
+        return ResponseEntity
+                .ok()
+                .body(responseDtoList)
+                ;
     }
+
+
     //request param 과 동일 하게하면 pathVariable("") 임의 지정 불가
     @GetMapping("/{postNo}")
     public ResponseEntity<?> detail(@PathVariable Long postNo){
         log.info("/posts/{} GET request");
-        return null;
+        // 개별 DTO를 생성해야함
+
+        PostEntity post = postRepository.findOne(postNo);
+
+        return ResponseEntity.ok().body(new PostUnitResponseDto(post));
     }
     // 게시물 등록
+
+    // {
+//     "title": "아라따리또",
+//     "writer": "백수",
+//     "content": "냐냐냐냐아아아하하하호호호",
+//     "hashTags": ["점심", "졸림", "까꿍"]
+// }
     @PostMapping
-    public ResponseEntity<?> create() {
+    public ResponseEntity<?> create(@RequestBody PostCreateDto createDto) {
         log.info("/posts POST request");
-        return null;
+        log.info("게시물 정보 : {}", createDto);
+
+        //dto -> entity 변환, 글번호 및 작성시간 자동기입을 수행해야한다ㅏㅏㅏㅏㅏ.
+        postRepository.save(createDto.toEntity());
+        boolean flag = true;
+        return flag
+                ?
+                ResponseEntity.ok().body("INSERT-SUCCESS")
+                :ResponseEntity.badRequest().body("INSERT-FAIL");
     }
 
     // 게시물 수정
-    @PatchMapping("/{postNo}")
-    public ResponseEntity<?> modify(@PathVariable Long postNo) {
-        log.info("/posts/{} PATCH request", postNo);
-        return null;
+    // 제목 내용 수정 수정시 수정 날짜 갱신
+
+//    {
+//        "postNo": 1,
+//            "title": "mod",
+//            "content": "mod"
+//    }
+    @PatchMapping
+    public ResponseEntity<?> modify(@RequestBody PostModReqDto modReqDto) {
+        log.info("/posts/{} PATCH request", modReqDto);
+
+        PostEntity targetModEntity = postRepository.findOne(modReqDto.getPostNo());
+
+        // null check 해야함 (하나만 바꾸고 싶을떄를 고려해야함)
+        if(modReqDto.getContent()!=null){
+            targetModEntity.setContents(modReqDto.getContent());
+        }
+        if(modReqDto.getTitle()!=null) {
+            targetModEntity.setTitle(modReqDto.getTitle());
+        }
+
+        targetModEntity.setModifyDate(LocalDateTime.now());
+        postRepository.save(targetModEntity);
+
+        boolean flag = true;
+        return flag
+                ?
+                ResponseEntity.ok().body("MODIFY-SUCCESS")
+                :ResponseEntity.badRequest().body("MODIFY-FAIL");
     }
     // 게시물 삭제
     @DeleteMapping("/{postNo}")
     public ResponseEntity<?> remove(@PathVariable Long postNo) {
         log.info("/posts/{} DELETE request", postNo);
-        return null;
+        postRepository.delete(postNo);
+        boolean flag = true;
+        return flag
+                ?
+                ResponseEntity.ok().body("DELETE-SUCCESS")
+                :ResponseEntity.badRequest().body("DELETE-FAIL");
+
     }
-
-
-
-
 
 }
