@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 
+import java.net.http.HttpHeaders;
+import java.util.Enumeration;
+
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
@@ -43,6 +46,18 @@ public class ApiContoller1 {
         return "";
     }
 
+    // 요청 헤더정보 얻기
+    @GetMapping("/header")
+    public String header(HttpServletRequest request){
+        log.info("==========header=======");
+        String host = request.getHeader("HOST");
+        String acc = request.getHeader("Accept");
+        String pet = request.getHeader("pet");
 
+        log.info("# host : " + host);
+        log.info("# acc : " + acc);
+        log.info("# pet : " + pet);
+        return " ";
+    }
 
 }
