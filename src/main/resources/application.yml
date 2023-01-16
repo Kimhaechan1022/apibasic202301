@@ -10,3 +10,8 @@ logging:
       example:
         apibasic:
           req: trace
+
+# /api-docs endpoint custom path
+springdoc:
+  swagger-ui:
+    path: /myApi.html

@@ -29,6 +29,8 @@ public class PostRepository {
     }
 
 
+
+
     // 개별조회
     public PostEntity findOne(Long postNo){
         return posts.get(postNo);

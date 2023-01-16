@@ -2,8 +2,10 @@ package com.example.apibasic.post.dto;
 
 
 import com.example.apibasic.post.entity.PostEntity;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.*;
 
+import javax.validation.constraints.*;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.PrimitiveIterator;
@@ -16,7 +18,23 @@ import java.util.PrimitiveIterator;
 @EqualsAndHashCode
 @Builder
 public class PostCreateDto {
+
+
+    // 클라이언트 에서 검증 한다해도 브라우저 안통하고 공격하면 답이 없기에 여기서 막아야한다.
+    // 클라이언트, 서버 밸리데이션, 디비에서 막기 삼단계로 막아야 한다.
+    // 보통 클라이언트에게 요청을 받은  DTO를 검증을 수행한다
+
+    /**
+     * NotNull 널값일 경우 에러발생
+     * NotEmpty 빈문자열일경우 에러발생
+     * NotBlank null이거나 빈문자열일때 에러발생
+     */
+
+    @NotBlank
+    @Size(min = 2, max = 10)
     private String writer;
+    @NotBlank
+    @Min(1) @Max(10)
     private String title;
     private String content;
     private List<String> hashTags;

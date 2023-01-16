@@ -7,15 +7,23 @@ import com.example.apibasic.post.dto.PostResponseDto;
 import com.example.apibasic.post.dto.PostUnitResponseDto;
 import com.example.apibasic.post.entity.PostEntity;
 import com.example.apibasic.post.repository.PostRepository;
+import com.example.apibasic.post.service.PostService;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+// DTO에 대한 null check를 수시로 수행해야한다. 원하는 비지니스로직과 달라질수 있을테니!
 
 // resource : 게시물(post)
 
@@ -45,7 +53,8 @@ public class PostApiController {
     //기능을 수행하기 위해서는 PostRepository 에게 의존한다.
     // 주입을 받고싶은 객체는 final 붙이셍
     // 자바 빈 등록 - 객체 주입을 위해 의존객체 등록을 맡긴다.
-    private final PostRepository postRepository;
+
+    private final PostService postService;
 
     /**
      *
@@ -69,17 +78,12 @@ public class PostApiController {
     @GetMapping
     public ResponseEntity<?> list() {
         log.info("/posts GET request");
-        List<PostEntity> list = postRepository.findAll();
 
-        //entity list를 dto 리스트로 변환해서 클라이언트에 응답해야한다이잉
-        List<PostResponseDto> responseDtoList = list.stream()
-                .map(PostResponseDto::new)
-                .collect(Collectors.toList());
-
-        return ResponseEntity
-                .ok()
-                .body(responseDtoList)
-                ;
+        try {
+            return ResponseEntity.ok().body(postService.getList());
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
 
@@ -87,61 +91,35 @@ public class PostApiController {
     @GetMapping("/{postNo}")
     public ResponseEntity<?> detail(@PathVariable Long postNo){
         log.info("/posts/{} GET request");
-        // 개별 DTO를 생성해야함
-
-        PostEntity post = postRepository.findOne(postNo);
-
-        return ResponseEntity.ok().body(new PostUnitResponseDto(post));
+        return ResponseEntity.ok().body(postService.getDetail(postNo));
+        // body에 데이터를 못 담으면 .build 이용
     }
     // 게시물 등록
 
-    // {
-//     "title": "아라따리또",
-//     "writer": "백수",
-//     "content": "냐냐냐냐아아아하하하호호호",
-//     "hashTags": ["점심", "졸림", "까꿍"]
-// }
+    //@Validated 를 붙여야 실제 검증 수행함
+    @Parameters({
+            @Parameter(name = "작성자", description = "게시물 작성자를 입력", example = "김철수")
+    })
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody PostCreateDto createDto) {
+    public ResponseEntity<?> create(@Validated @RequestBody PostCreateDto createDto, BindingResult result) {
         log.info("/posts POST request");
         log.info("게시물 정보 : {}", createDto);
 
-        //dto -> entity 변환, 글번호 및 작성시간 자동기입을 수행해야한다ㅏㅏㅏㅏㅏ.
-        postRepository.save(createDto.toEntity());
-        boolean flag = true;
-        return flag
+        if(result.hasErrors()){
+            List<FieldError> fieldErrors = result.getFieldErrors();
+            return ResponseEntity.internalServerError().body(fieldErrors);
+
+        }
+        return postService.create(createDto)
                 ?
                 ResponseEntity.ok().body("INSERT-SUCCESS")
                 :ResponseEntity.badRequest().body("INSERT-FAIL");
     }
 
-    // 게시물 수정
-    // 제목 내용 수정 수정시 수정 날짜 갱신
-
-//    {
-//        "postNo": 1,
-//            "title": "mod",
-//            "content": "mod"
-//    }
     @PatchMapping
     public ResponseEntity<?> modify(@RequestBody PostModReqDto modReqDto) {
         log.info("/posts/{} PATCH request", modReqDto);
-
-        PostEntity targetModEntity = postRepository.findOne(modReqDto.getPostNo());
-
-        // null check 해야함 (하나만 바꾸고 싶을떄를 고려해야함)
-        if(modReqDto.getContent()!=null){
-            targetModEntity.setContents(modReqDto.getContent());
-        }
-        if(modReqDto.getTitle()!=null) {
-            targetModEntity.setTitle(modReqDto.getTitle());
-        }
-
-        targetModEntity.setModifyDate(LocalDateTime.now());
-        postRepository.save(targetModEntity);
-
-        boolean flag = true;
-        return flag
+        return postService.update(modReqDto)
                 ?
                 ResponseEntity.ok().body("MODIFY-SUCCESS")
                 :ResponseEntity.badRequest().body("MODIFY-FAIL");
@@ -150,9 +128,8 @@ public class PostApiController {
     @DeleteMapping("/{postNo}")
     public ResponseEntity<?> remove(@PathVariable Long postNo) {
         log.info("/posts/{} DELETE request", postNo);
-        postRepository.delete(postNo);
-        boolean flag = true;
-        return flag
+
+        return postService.delete(postNo)
                 ?
                 ResponseEntity.ok().body("DELETE-SUCCESS")
                 :ResponseEntity.badRequest().body("DELETE-FAIL");
