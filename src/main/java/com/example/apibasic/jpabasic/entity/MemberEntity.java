@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode(of="userId")
 @Entity
 @Table(name = "tbl_member")
+@Builder
 public class MemberEntity {
 
     @Id
