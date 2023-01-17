@@ -34,7 +34,7 @@ public class PostUnitResponseDto {
         this.content = entity.getContents();
         this.title = entity.getTitle();
         this.regDate = entity.getCreateDate();
-        this.hashTags = entity.getHashTags();
+//        this.hashTags = entity.getHashTags();
         this.modDate = entity.getModifyDate();
     }
 

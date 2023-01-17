@@ -23,6 +23,7 @@ public class MemberEntity {
     @Column(name = "user_code")  //애트리뷰트 속성이름 부여
     private Long userId; //회원 식별 코드 (기본키)
 
+
     @Column(nullable = false, unique = true)  // NOT NULL 제약조건, 중복방지
     private String account;
     private String password;

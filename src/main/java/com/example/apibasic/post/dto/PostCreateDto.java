@@ -31,22 +31,20 @@ public class PostCreateDto {
      */
 
     @NotBlank
-    @Size(min = 2, max = 10)
     private String writer;
     @NotBlank
-    @Min(1) @Max(10)
     private String title;
     private String content;
-    private List<String> hashTags;
+//    private List<String> hashTags;
 
     // PostEntity로 변환하는 유틸 메소드
     public PostEntity toEntity(){
         return PostEntity.builder()
-                .postNo(PostEntity.sequence++)
+//                .postNo(PostEntity.sequence++)
                 .writer(this.writer)
                 .contents(this.content)
                 .title(this.title)
-                .hashTags(this.hashTags)
+//                .hashTags(this.hashTags)
                 .createDate(LocalDateTime.now())
                 .build();
     }

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -36,36 +37,49 @@ public class PostService {
 
     // 개별 조회
     public PostUnitResponseDto getDetail(Long postNo) {
-        PostEntity post = postRepository.findOne(postNo);
-        return new PostUnitResponseDto(post);
+        Optional<PostEntity> post = postRepository.findById(postNo);
+        if(post.isPresent()){
+            return new PostUnitResponseDto(post.get());
+        }
+        throw new RuntimeException("조회결과 x");
+
     }
 
-    public boolean create(PostCreateDto createDto) {
+    public PostResponseDto insert(PostCreateDto createDto) throws RuntimeException {
+
         postRepository.save(createDto.toEntity());
-        boolean flag = true;
-        return flag;
+        PostResponseDto postResponseDto = new PostResponseDto(createDto.toEntity());
+
+        return postResponseDto;
     }
 
     public boolean update(PostModReqDto modReqDto) {
-        PostEntity targetModEntity = postRepository.findOne(modReqDto.getPostNo());
+        Optional<PostEntity> ModEntity = postRepository.findById(modReqDto.getPostNo());
+        if(ModEntity.isPresent()){
+            PostEntity targetModEntity = ModEntity.get();
+            // null check 해야함 (하나만 바꾸고 싶을떄를 고려해야함)
+            if (modReqDto.getContent() != null) {
+                targetModEntity.setContents(modReqDto.getContent());
+            }
+            if (modReqDto.getTitle() != null) {
+                targetModEntity.setTitle(modReqDto.getTitle());
+            }
 
-        // null check 해야함 (하나만 바꾸고 싶을떄를 고려해야함)
-        if (modReqDto.getContent() != null) {
-            targetModEntity.setContents(modReqDto.getContent());
+            targetModEntity.setModifyDate(LocalDateTime.now());
+            postRepository.save(targetModEntity);
+
+            boolean flag = true;
+            return flag;
         }
-        if (modReqDto.getTitle() != null) {
-            targetModEntity.setTitle(modReqDto.getTitle());
+        else {
+            throw new RuntimeException("조회결과 x");
         }
 
-        targetModEntity.setModifyDate(LocalDateTime.now());
-        postRepository.save(targetModEntity);
 
-        boolean flag = true;
-        return flag;
     }
 
     public boolean delete(Long postNo) {
-        postRepository.delete(postNo);
+        postRepository.deleteById(postNo);
         boolean flag = true;
         return flag;
     }

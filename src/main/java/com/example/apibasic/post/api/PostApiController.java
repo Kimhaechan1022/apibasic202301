@@ -4,9 +4,6 @@ package com.example.apibasic.post.api;
 import com.example.apibasic.post.dto.PostCreateDto;
 import com.example.apibasic.post.dto.PostModReqDto;
 import com.example.apibasic.post.dto.PostResponseDto;
-import com.example.apibasic.post.dto.PostUnitResponseDto;
-import com.example.apibasic.post.entity.PostEntity;
-import com.example.apibasic.post.repository.PostRepository;
 import com.example.apibasic.post.service.PostService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Parameters;
@@ -18,10 +15,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 // DTO에 대한 null check를 수시로 수행해야한다. 원하는 비지니스로직과 달라질수 있을테니!
 
@@ -104,16 +98,30 @@ public class PostApiController {
     public ResponseEntity<?> create(@Validated @RequestBody PostCreateDto createDto, BindingResult result) {
         log.info("/posts POST request");
         log.info("게시물 정보 : {}", createDto);
-
-        if(result.hasErrors()){
-            List<FieldError> fieldErrors = result.getFieldErrors();
-            return ResponseEntity.internalServerError().body(fieldErrors);
-
+        if (createDto == null) {
+            return ResponseEntity
+                    .badRequest()
+                    .body("게시물 정보를 전달해주세요.");
         }
-        return postService.create(createDto)
-                ?
-                ResponseEntity.ok().body("INSERT-SUCCESS")
-                :ResponseEntity.badRequest().body("INSERT-FAIL");
+//
+//        if (result.hasErrors()) { // 검증에러가 발생할 시 true 리턴
+//            List<FieldError> fieldErrors = result.getFieldErrors();
+//            fieldErrors.forEach(err -> {
+//                log.warn("invalidated client data - {}", err.toString());
+//            });
+//            return ResponseEntity
+//                    .badRequest()
+//                    .body(fieldErrors);
+//        }
+
+        try {
+            PostResponseDto postResponseDto = postService.insert(createDto);
+            return ResponseEntity.ok().body(postResponseDto);
+        }catch (Exception e){
+            return ResponseEntity
+                    .internalServerError()
+                    .body(e.getMessage());
+        }
     }
 
     @PatchMapping
