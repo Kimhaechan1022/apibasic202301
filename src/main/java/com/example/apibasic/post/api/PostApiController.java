@@ -1,6 +1,7 @@
 package com.example.apibasic.post.api;
 
 
+import com.example.apibasic.post.dto.PageRequestDto;
 import com.example.apibasic.post.dto.PostCreateDto;
 import com.example.apibasic.post.dto.PostModReqDto;
 import com.example.apibasic.post.dto.PostResponseDto;
@@ -69,6 +70,17 @@ public class PostApiController {
 
 
     //게시물 목록 조회
+    @GetMapping
+    public ResponseEntity<?> list(PageRequestDto pageRequestDto) {
+        log.info("/posts GET request");
+        log.info("pageRequestDto: " + pageRequestDto);
+
+        try {
+            return ResponseEntity.ok().body(postService.getList(pageRequestDto));
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
     @GetMapping
     public ResponseEntity<?> list() {
         log.info("/posts GET request");
@@ -143,5 +155,10 @@ public class PostApiController {
                 :ResponseEntity.badRequest().body("DELETE-FAIL");
 
     }
+
+
+    // paging
+    // 이전 1,2,3,4,5,6,7,8,9 다음
+
 
 }

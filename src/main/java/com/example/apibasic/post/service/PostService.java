@@ -1,18 +1,21 @@
 package com.example.apibasic.post.service;
 
-import com.example.apibasic.post.dto.PostCreateDto;
-import com.example.apibasic.post.dto.PostModReqDto;
-import com.example.apibasic.post.dto.PostResponseDto;
-import com.example.apibasic.post.dto.PostUnitResponseDto;
+import com.example.apibasic.post.dto.*;
 import com.example.apibasic.post.entity.PostEntity;
 import com.example.apibasic.post.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 
 @RequiredArgsConstructor
@@ -30,8 +33,37 @@ public class PostService {
         //entity list를 dto 리스트로 변환해서 클라이언트에 응답해야한다이잉
         List<PostResponseDto> responseDtoList = list.stream()
                 .map(PostResponseDto::new)
-                .collect(Collectors.toList());
+                .collect(toList());
         return responseDtoList;
+    }
+    public PostResponseDto getList(PageRequestDto pageRequestDTO) {
+
+        Pageable pageable = PageRequest.of(
+                pageRequestDTO.getPage() - 1,
+                pageRequestDTO.getSizePerPage(),
+                Sort.Direction.DESC,
+                "createDate"
+        );
+
+        final Page<PostEntity> pageData = postRepository.findAll(pageable);
+        List<PostEntity> list = pageData.getContent();
+
+        if (list.isEmpty()) {
+            throw new RuntimeException("조회 결과가 없어용~");
+        }
+
+        // 엔터티 리스트를 DTO리스트로 변환해서 클라이언트에 응답
+        List<PostResponseDto> responseDTOList = list.stream()
+                .map(PostResponseDto::new)
+                .collect(toList());
+
+//        PostResponseDto listResponseDTO = PostResponseDto.builder()
+//                .count(responseDTOList.size())
+//                .pageInfo(new PostResponseDto<PostEntity>(pageData))
+//                .posts(responseDTOList)
+//                .build();
+
+        return null;
     }
 
 

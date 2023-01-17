@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 
 @Setter @Getter @ToString
@@ -17,7 +16,9 @@ public class PostResponseDto {
     private String author;
     private String title;
     private String content;
-    private List<String> hashTags;
+
+    private String count;
+//    private List<String> hashTags;
 
     @JsonFormat(pattern = "yyyy/MM/dd")
     private LocalDateTime regDate;

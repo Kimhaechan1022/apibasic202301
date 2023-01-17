@@ -262,4 +262,20 @@ class MemberRepositoryTest {
     }
 
 
+    //failed,
+    @Test
+    @DisplayName("쿼리메서드를 사용하여 이름에 '꾸러긔'인 회원 삭제")
+    void jpql4() {
+
+        // when
+        memberRepository.deleteByNicK("꾸러긔");
+
+        // then
+        List<MemberEntity> allList = memberRepository.findAll();
+        allList.forEach(m -> {
+            System.out.println(m);
+        });
+    }
+
+
 }
